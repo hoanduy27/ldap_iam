@@ -1,0 +1,40 @@
+1.
+x[i] = 0 for i in [1..n]
+W = 0
+V = 0
+
+for i = 1 to n do:
+    x[i] = choice(0, 1)
+
+for i = 1 to n do:
+    W += x[i]*w[i]
+    V += x[i]*v[i]
+    if(W > M) return failure
+    if(V < R) return failure
+return success
+
+2.
+input: set[1..n], sum
+
+define subsetSum(set, sum):
+    S = 0
+    x[i] = 0 for i in [1..n]
+
+    for i = 1 to n do:
+        x[i] = choice(0,1)
+
+    for i = 1 to n do:
+        S += x[i]*set[i]
+
+    if(S == sum) return success
+    else return failure
+    
+4.
+hamilton(V, E):
+    initialize starting vertex v in V
+
+    x[i] = 0 for i in [1..n]
+    for i = 1 to |V| do:
+        x[i] = choice(T,F)
+
+        

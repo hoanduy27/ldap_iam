@@ -1,0 +1,8 @@
+
+ou = student
+   uid = duy
+   uid = vuong
+ou = lecturer
+   uid = cuong
+ou = dev
+    uid = kim 

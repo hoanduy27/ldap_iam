@@ -1,8 +1,8 @@
 
-ou = student
-   uid = duy
-   uid = vuong
-ou = lecturer
-   uid = cuong
-ou = dev
-    uid = kim 
+ou = role
+   ou = developer (gid = 5000)
+   ou = lecturer (gid = 5001)
+   ou = student (gid = 5002)
+ou = user
+   uid = duynguyen (gid = 5000, developer)
+   uid = cuongnguyen (gid = 5001, lecturer)

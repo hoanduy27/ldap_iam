@@ -103,7 +103,7 @@ class IAM:
         
         if self.conn.bind() and self.validate_role():
             print(f"Logged in as {self.role}")
-            print(self.conn.entries.)
+            print(self.conn.entries)
         else:
             print("Wrong password or usn")
             self.conn.unbind()

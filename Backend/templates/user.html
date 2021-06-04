@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang='vi'>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>User Information</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/foundation.css')}}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="card profile-card-action-icons paint-me">
+            <div class="card-section">
+                <div class="profile-card-header">
+                    <div class="profile-card-avatar">
+                        <!-- <img class="avatar-image" src="https://i.imgur.com/3AeQRbR.jpg" alt="Harry Manchanda"> -->
+                        <i class="fa fa-user-circle avatar-image fa-3x" aria-hidden="true"></i>
+                    </div>
+                    <div class="profile-card-author">
+                        <h5 class="author-title">{{ displayName }}</h5>
+                        <p class="author-description">{{ role|capfirst }}</p>
+                    </div>
+                </div>
+                <div class="profile-card-about">
+                    <h5 class="about-title separator-left">About Me</h5>
+                    <div class="row about-skills grid-x">
+                        <div class="small-2 large-3 columns">
+                            <ul class="arrow">
+                                <li>cn</li>
+                                <li>displayName</li>
+                                <li>gidNumber</li>
+                                <li>givenName</li>
+                                <li>homeDirectory</li>
+                            </ul>
+                        </div>
+                        <div class="small-4 large-4 columns">
+                            <ul class="myvalue vline">
+                                <li>:&nbsp {{cn}}</li>
+                                <li>:&nbsp {{displayName}}</li>
+                                <li>:&nbsp {{gidNumber}}</li>
+                                <li>:&nbsp {{givenName}}</li>
+                                <li>:&nbsp {{homeDirectory}}</li>
+                            </ul>
+                        </div>
+                        <div class="small-2 large-2 columns">
+                            <ul class="arrow">
+                                <li>loginShell</li>
+                                <li>sn</li>
+                                <li>uid</li>
+                                <li>role</li>
+                            </ul>
+                        </div>
+                        <div class="small-4 large-3 columns">
+                            <ul class="myvalue">
+                                <li>:&nbsp {{loginShell}}</li>
+                                <li>:&nbsp {{sn}}</li>
+                                <li>:&nbsp {{uid}}</li>
+                                <li>:&nbsp {{role}}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-card-action">
+                    <div class="action-area"></div>
+                    <div class="action-area"></div>
+                    <div class="action-area"></div>
+                    <div class="action-area"></div>
+                    <div class="action-area">
+                        <a href="#" class="action-anchor has-tip bottom" data-tooltip aria-haspopup="true"
+                            data-disable-hover="false" tabindex="2" title="Turn on edit mode" id="botright">
+                            <i class="fas fa-edit" onclick="turn_on_edit()"></i>
+                            <span class="show-for-sr">Turn on edit mode</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/vendor.js')}}" defer></script>
+    <script src="{{ url_for('static', filename='js/foundation.js')}}"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        function turn_on_edit() {
+            var key = $(".arrow > li");
+            var i = 0;
+            $(".myvalue > li").each(function () {
+                var value = $(this)[0].innerText.slice(3,);
+                $(this).html("<input type='text' name='" + key[i].innerText + "' value='" + value + "' style='height: 1.6em; width: 10em'>")
+                i++;
+            })
+
+            $("#botright").html('<button type="button" class="button" onclick="window.location.reload()">Back</button> <button type="button" class="success button" onclick="update()">Apply</button>')
+        }
+
+        function update() {
+            var j = {};
+            var key = $(".arrow > li");
+            var i = 0;
+            $(".myvalue > li > input").each(function () {
+                var value = $(this)[0].value;
+                j[key[i].innerText] = value;
+                i++;
+            })
+            console.log(j);
+            $.ajax(
+                {
+                    url: 'http://localhost:5000/update-info',
+                    type: 'POST',
+                    contentType: "application/json",
+                    data: JSON.stringify(j),
+                    success: function (data) {
+                        window.location.reload();
+                        alert("Update successful!")
+
+                    },
+                    error: function (data) {
+                        window.location.reload();
+                        alert("Update fail!");
+                    }
+                }
+            )
+        }
+    </script>
+
+
+
+</body>
+
+</html>

@@ -176,19 +176,20 @@ class IAM:
             print("No need. Already logged in")
             
         
-    def updateInfo(self, cn=None, displayName=None, givenName=None, sn=None, userpassword=None):
+    def updateInfo(self, cn=None, displayName=None, givenName=None, sn=None):
         if(self.isLoggedIn):
+            dn=f'uid={self.username},ou=user,{self.search_base}' if self.role!='admin'\
+                else f'uid={self.username},{self.search_base}'
             changes = {
                 'cn': [(MODIFY_REPLACE, [cn])],
                 'displayName': [(MODIFY_REPLACE, [displayName])],
                 'givenName': [(MODIFY_REPLACE, [givenName])],
-                'sn': [(MODIFY_REPLACE, [sn])],
-                'userpassword': [(MODIFY_REPLACE, [userpassword])],
+                'sn': [(MODIFY_REPLACE, [sn])]
             }
             changes = {k: changes[k] for k in changes if changes[k][0][1][0] is not None}
-            
+
             return self.conn.modify(
-                dn=f'uid={self.username},ou=user,{self.search_base}',
+                dn=dn,
                 changes=changes
             )
         else:
@@ -197,7 +198,14 @@ class IAM:
 
     def changePassword(self, password):
         if self.isLoggedIn:
-            if self.updateInfo(userpassword=password):
+            dn=f'uid={self.username},ou=user,{self.search_base}' if self.role!='admin'\
+                else f'uid={self.username},{self.search_base}'
+            
+            if self.conn.modify(
+                dn=dn,
+                changes={
+                    'userpassword': [(MODIFY_REPLACE, [password])]
+            }):
                 self.logout()
                 print('Password has changed. Please re-login')
             else: 
@@ -308,5 +316,5 @@ class IAM:
 # print(app.getInfo())
 # print(app.getAllInfo(True))
 
-app = IAM('duynguyen', '123456', 'developer')
-app.updateInfo(displayName='Hello may cung')
+# app = IAM('duynguyen', '', 'developer')
+# app.updateInfo(displayName='Hello may cung')

@@ -6,6 +6,12 @@
     margin-top: 5vh;
 }
 
+.footer{
+  margin: 0 auto;
+  margin-top: 15vh;
+  margin-left: 47vw;
+}
+
 .dashboard-table {
     border-collapse: collapse;
     margin-bottom: 0;

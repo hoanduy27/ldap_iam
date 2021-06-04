@@ -17,47 +17,57 @@
             <thead>
                 <tr>
                     <th><a href="#">ID</i></a></th>
-                    <th><a href="#">Timestamp</i></a></th>
-                    <th><a href="#">Username</i></a></th>
-                    <th><a href="#">Role</i></a></th>
+                    <th><a href="#">cn</i></a></th>
+                    <th><a href="#">displayName</i></a></th>
+                    <th><a href="#">gidNumber</i></a></th>
+                    <th><a href="#">givenName</i></a></th>
+                    <th><a href="#">homeDirectory</i></a></th>
+                    <th><a href="#">loginShell</i></a></th>
+                    <th><a href="#">sn</i></a></th>
                 </tr>
             </thead>
             <tbody>
             </tbody>
-            {%for log in content%}
+            {%for user in users%}
             <tr>
-                <td>{{ loop.index + (page - 1) * per_page }}</td>
-                <td><span class="dashboard-table-timestamp">{{log[0]}}</span></td>
-                <td>{{log[1]}}</td>
-                <td class="bold">{{log[2]}}</td>
+                <td>{{ loop.index}}</td>
+                <td>{{user["cn"]}}</td>
+                <td>{{user["displayName"]}}</td>
+                <td>{{user["gidNumber"]}}</td>
+                <td>{{user["givenName"]}}</td>
+                <td>{{user["homeDirectory"]}}</td>
+                <td>{{user["loginShell"]}}</td>
+                <td>{{user["sn"]}}</td>
             </tr>
             {%endfor%}
             </tbody>
         </table>
-        <div style="padding-left: 18vw; padding-top: 1em">{{ pagination.links }}</div>
     </div>
+
+
+
     <div class="footer">
         <button class="button" onclick="logout()">Logout</button>
-        <button class="button" onclick="getAllUsers()">Users</button>
+        <button class="button" onclick="log()">Log</button>
     </div>
     <script src="{{ url_for('static', filename='js/vendor.js')}}" defer></script>
     <script src="{{ url_for('static', filename='js/foundation.js')}}"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <script type="text/javascript">
-        function logout(){
+        function logout() {
             window.location.href = 'http://localhost:5500/Frontend/index.html';
         }
 
-        function getAllUsers(){
+        function log() {
             $.ajax(
                 {
-                    url: 'http://localhost:5000/get-all-users',
+                    url: 'http://localhost:5000/login',
                     type: 'GET',
                     success: function (data) {
-                        window.location.href = 'http://localhost:5000/get-all-users'
+                        window.location.href = 'http://localhost:5000/login'
                         console.log(data);
                     },
-                    error: function(data){
+                    error: function (data) {
                         console.log(data.responseJSON);
                         alert(data.responseJSON.error);
                     }

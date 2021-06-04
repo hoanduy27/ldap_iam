@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang='vi'>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Trang quản trị</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="assets/css/foundation.css">
+    <link rel="stylesheet" href="assets/css/foundation-float.css">
+    <link rel="stylesheet" href="assets/css/foundation-prototype.css">
+    <link rel="stylesheet" href="assets/css/foundation-rtl.css">
+    <link rel="stylesheet" href="assets/css/_dashboard.css">
+    <style>
+    .top-bar-login {
+        height: 24px;
+        background-color: rgb(245, 245, 245);
+        position: relative;
+    }
+
+    .top-bar-login a {
+        line-height: 24px;
+        text-decoration: none;
+        position: absolute;
+        right: 30px;
+    }
+
+    .top-bar-info {
+        height: 24px;
+        position: relative;
+    }
+
+    .top-bar-info ul {
+        list-style-type: none;
+        position: absolute;
+        right: 40px;
+    }
+
+    .top-bar-info ul li {
+        display: inline-block;
+        line-height: 24px;
+        padding-right: 2px;
+    }
+
+    .top-bar-info ul li:not(:last-child):after {
+        content: '|';
+    }
+    </style>
+</head>
+
+<body>
+<div class="app-dashboard shrink-medium">
+  <div class="app-dashboard-body off-canvas-wrapper">
+    <div id="app-dashboard-sidebar" class="app-dashboard-sidebar position-left off-canvas off-canvas-absolute reveal-for-medium" data-off-canvas>
+      <div class="app-dashboard-sidebar-title-area">
+        <div class="app-dashboard-close-sidebar">
+          <h3 class="app-dashboard-sidebar-block-title">./</h3>
+          <!-- Close button -->
+          <button id="close-sidebar" data-app-dashboard-toggle-shrink class="app-dashboard-sidebar-close-button show-for-medium" aria-label="Close menu" type="button">
+            <span aria-hidden="true"><a href="#"><i class="large fa fa-angle-double-left"></i></a></span>
+          </button>
+        </div>
+        <div class="app-dashboard-open-sidebar">
+          <button id="open-sidebar" data-app-dashboard-toggle-shrink class="app-dashboard-open-sidebar-button show-for-medium" aria-label="open menu" type="button">
+            <span aria-hidden="true"><a href="#"><i class="large fa fa-angle-double-right"></i></a></span>
+          </button>
+        </div>
+      </div>
+      <div class="app-dashboard-sidebar-inner">
+        <ul class="menu vertical">
+          <li><a href="#" class="is-active">
+            <i class="large fa fa-institution"></i><span class="app-dashboard-sidebar-text">Users</span>
+          </a></li>
+          <li><a onclick="showDatabase('products')">
+            <i class="large fa fa-hourglass"></i><span class="app-dashboard-sidebar-text" >Products</span>
+          </a></li>
+          <li><a>
+            <i class="large fa fa-industry"></i><span class="app-dashboard-sidebar-text">News</span>
+          </a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="app-dashboard-body-content off-canvas-content" data-off-canvas-content>
+    <div class="database-table-content">
+        <!-- Content will be showed here -->
+    </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>
+function showDatabase(type){
+    var content;
+    $.ajax({url:"_dashboard.php?type="+type,
+            type: "get",
+            success: function(data){
+                $(".database-table-content").html(data);
+            }}
+    )
+}
+
+function remove(id,table){
+    var content;
+    var u = "_dashboard.php?edit=remove&id="+id+"&table="+table;
+    $.ajax({
+        url: u ,
+        type: "get",
+        success: function(data){
+            // console.log(data);
+            showDatabase(table);
+            ;
+        }
+    })
+}
+
+function add_product(){
+  var id = $(".filter-id")[0].value;
+  var name = $(".filter-name")[0].value;
+  var type = $(".filter-type")[0].value;
+  var img = $(".filter-img")[0].value;
+  var content = $(".filter-content")[0].value;
+  var u = "_dashboard.php?edit=add&table=products&id="+id+"&name="+name+"&type="+type+"&img="+img+"&content="+content;
+  console.log(u);
+  $.ajax({
+        url: u ,
+        type: "get",
+        success: function(data){
+            if (data != "success") alert("INVALID PRODUCT INFORMATION");
+            showDatabase("products");
+        }
+    })
+}
+
+
+
+function filter(){
+    var id = $(".filter-id")[0].value;
+    var name = $(".filter-name")[0].value;
+    var type = $(".filter-type")[0].value;
+    var u = "_dashboard.php?filter=True&id="+id+"&name="+name+"&type="+type;
+    console.log(u);
+    $.ajax({url:u,
+            type: "get",
+            success: function(data){
+                $("tbody").html(data);
+            }}
+    )
+}
+</script>
+</body>
+</html>

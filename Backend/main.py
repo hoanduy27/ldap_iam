@@ -113,6 +113,18 @@ def update_info():
     response = {'status': "FAIL"}
     return Response(response=json.dumps(response), status=400, mimetype="application/json")
 
+@app.route("/get-all-users", methods=["GET"])
+# @expects_json(request_schema.login)
+def get_all_users():
+    global iam_object
+    if iam_object.role.upper() == "ADMIN":
+        users = iam_object.getAllUsers(grouped=False)
+        print(users[0])
+        return render_template("allusers.html",users=users)
+    else:
+        response = {'status': 'FAILED','error': "Only admin can access this!"}
+        return Response(response=json.dumps(response), status=400, mimetype="application/json")
+
 @app.route("/change-password", methods=["POST"])
 @expects_json(request_schema.login)
 def change_password():

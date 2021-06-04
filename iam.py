@@ -281,7 +281,8 @@ class IAM:
                 return {k: entry[k][0] for k in entry}
             users = list(map(lambda x: getUser(x), response[1:]))
             if not grouped:
-                return json.dumps(users)
+                # return json.dumps(users)
+                return users
             else:
                 roles = self._fetch_roles()
                 grouped_users = {}
@@ -292,7 +293,8 @@ class IAM:
                             'users': list(filter(lambda x: x['gidNumber'] == gid, users))
                         }
                     })
-                return json.dumps(grouped_users)
+                # return json.dumps(grouped_users)
+                return grouped_users
         raise Err("You don't have permission")
     
 

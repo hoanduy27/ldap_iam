@@ -6,7 +6,8 @@ from markupsafe import escape
 from schema import Schema
 from flask_expects_json import expects_json
 from utils import *
-
+from datetime import datetime
+from flask_paginate import Pagination,get_page_args
 
 path = os.path.abspath(__file__)
 parent_path = path.rsplit(os.path.sep, 2)[0]
@@ -24,6 +25,8 @@ app.add_template_filter(capfirst)
 
 request_schema = Schema()
 iam_object = None
+import pandas as pd
+log = pd.read_csv("log.csv")
 
 
 @app.route("/login", methods=["GET","POST"])
@@ -48,13 +51,26 @@ def login():
                         'error': str(e)}    
             return Response(response=json.dumps(response), status=400, mimetype="application/json")
 
+        timestamp = datetime.now().strftime("%H:%M:%S %d/%m/%Y")
+        
+        global log
+        log.loc[len(log)] = [timestamp,username,role]
+        log.to_csv("log.csv",index=False)
 
         response = {'status': "OK",
                     'role' : iam_object.role}
-    # return Response(response=json.dumps(response), status=200, mimetype="application/json")
-    content = json.loads(iam_object.getInfo())
-    content['root'] = os.path.join(parent_path,"Frontend")
-    return render_template('user.html', **content)
+        return Response(response=json.dumps(response), status=200, mimetype="application/json")
+
+    if iam_object.role.upper() == "ADMIN":
+        page, per_page, offset = get_page_args(page_parameter='page', per_page_parameter='per_page')
+        content = log.to_numpy().tolist()[::-1][offset:offset+per_page]
+        pagination = Pagination(page=page, per_page=per_page, offset=offset,total=len(log),css_framework="foundation6")
+        return render_template('admin.html',content=content,len=len(content),pagination=pagination,page=page,per_page=per_page)
+    else:
+        content = iam_object.getInfo()
+        content['root'] = os.path.join(parent_path,"Frontend")
+        print(content)
+        return render_template('user.html', **content)
 
 @app.route("/add-user", methods=["POST"])
 @expects_json(request_schema.login)
@@ -89,7 +105,6 @@ def update_info():
         role = data["role"]
         sn = data["sn"]
         uid = data["uid"]
-        print(cn,displayName,givenName,sn)
 
         if (iam_object.updateInfo(cn,displayName,givenName,sn)):
             response = {'status': "OK"}

@@ -68,7 +68,7 @@
                     <div class="action-area"></div>
                     <div class="action-area"></div>
                     <div class="action-area"></div>
-                    <div class="action-area"><a href="http://localhost:5500/Frontend/index.html" class="hide-me"><i class="fas fa-sign-out-alt"></i></a></div>
+                    <div class="action-area hide-me"><a href="http://localhost:5500/Frontend/index.html"><i class="fas fa-sign-out-alt"></i></a></div>
                     <div class="action-area">
                         <a href="#" class="action-anchor has-tip bottom" data-tooltip aria-haspopup="true"
                             data-disable-hover="false" tabindex="2" title="Turn on edit mode" id="botright">
@@ -93,7 +93,8 @@
                 i++;
             })
 
-            $("#botright").html('<button type="button" class="button" onclick="window.location.reload()">Back</button> <button type="button" class="success button" onclick="update()">Apply</button>')
+            $("#botright").html('<button type="button" class="success button" onclick="update()">Apply</button>');
+            $(".hide-me").html('<button type="button" class="button" onclick="window.location.reload()">Back</button>');
         }
 
         function update() {

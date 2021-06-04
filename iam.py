@@ -146,7 +146,7 @@ class IAM:
                 changes=changes
             )
         else:
-            print('Update failed, you\'re not logged in')
+            raise Err('Update failed, you\'re not logged in')
 
     def changePassword(self, password):
         pass

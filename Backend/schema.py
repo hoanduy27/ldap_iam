@@ -6,3 +6,12 @@ class Schema():
             'password': {'type': 'string', 'required': True},
             'role': {'type': 'string', 'required': True}
         }
+        # self.login = {
+        #     'type': 'object',
+        #     'properties': {
+        #         'username': {'type': 'string'},
+        #         'password': {'type': 'string'},
+        #         'role': {'type': 'string'}
+        #     },
+        #     'required': ['username', 'password','role']
+        # }

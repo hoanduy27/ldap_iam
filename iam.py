@@ -1,3 +1,4 @@
+import re
 from ldap3 import ALL_ATTRIBUTES, MODIFY_REPLACE, Server, Connection, ALL, SUBTREE
 import ldap3
 from ldap3.core.exceptions import LDAPException, LDAPBindError
@@ -7,6 +8,7 @@ import yaml
 import ssl
 import json
 import os
+from functools import reduce
 
 class Err(Exception):
     def __init__(self,text):
@@ -32,7 +34,6 @@ class IAM:
         self.conn = None
         self.isLoggedIn = False
         self.login(username, password, role)
-
     def _get_new_uid(self):
         if self.conn.search(
             search_base=f'ou=user,{self.search_base}',
@@ -57,6 +58,32 @@ class IAM:
             response = json.loads(response)
             return response['attributes']['gidNumber'][0]
         return None
+
+    def _fetch_roles(self):
+        if self.conn.search(
+            search_base=f'ou=role,{self.search_base}',
+            search_filter=f'(objectClass=*)',
+            attributes=['gidNumber', 'cn']
+        ):
+            response = self.conn.entries
+            gids ={}
+            for entry in response[1:]:
+                entry = json.loads(entry.entry_to_json())
+                entry = entry['attributes']
+                gids.update({entry['gidNumber'][0] : entry['cn'][0]})
+            return gids
+        return None
+
+    # def _find_roles(self, gid):
+    #     if self.conn.search(
+    #         search_base=f'ou=role,{self.search_base}',
+    #         search_filter=f'(&(objectClass=*)(gidNumber={gid}))',
+    #         attributes=['cn']
+    #     ):
+    #         response = self.conn.entries[0].entry_to_json()
+    #         response = json.loads(response)
+    #         return response['attributes']['cn'][0]
+    #     return None
 
     def _validate_role(self):
         if(self.role != 'admin'):
@@ -185,22 +212,94 @@ class IAM:
         else:
             print("No need. Already logged out")
 
+    def getInfo(self):
+        if(self.isLoggedIn):
+            search_base = f'uid={self.username},ou=user,{self.search_base}' if self.role != 'admin' \
+                else f'uid={self.username},{self.search_base}'
+            attributes = ['givenName', 'sn', 'cn', 'displayName', 'homeDirectory', 'loginShell', 'gidNumber'] \
+                if self.role != 'admin' else ['sn', 'cn']
 
-def test_login():
-    # Admin
-    admin = IAM('admin', 'eladmin', 'admin')
-    #print(admin.add_user("Vuong", "Hoang", 'hoangvuong', 'hoangvuong123', 'student'))
-    IAM('admin', 'eladmin', 'developer')
-    # Wrong password
-    IAM('duynguyen', 'duynguyen', 'developer')
-    # Wrong usn, password
-    IAM('duynguyn', 'duybingu', 'lecturer')
-    # Valid usn, password, role
-    good = IAM('cuongnguyen', 'duynguyen123', 'lecturer')
-    # Valid usn, password. Wrong role
-    IAM('cuongnguyen', 'duynguyen123', 'developer')
-    # Valid usn, password. Role does not exists
-    IAM('cuongnguyen', 'duynguyen123', 'dev')
+            self.conn.search(
+                search_base=search_base,
+                search_filter=f'(objectClass=*)',
+                attributes=attributes
+            )
+            response = self.conn.entries[0].entry_to_json()
+            response = json.loads(response)
+            response = response['attributes']
+            info = {k: response[k][0] for k in response}
+            info.update({'uid':self.username, 'role': self.role})
+            return json.dumps(info)
+        raise Err("You're not logged in")
 
-if __name__ == '__main__':
-    test_login()
+    def getAllUsers(self, grouped=False):
+        """
+            List all users
+            Return value: json(data)
+                - grouped = False: data = List[{attr: value}]
+                - grouped = True: data = {gid: {role: name, users: List{attr: value}}}
+            Example:
+                - grouped = True:
+                {
+                    "5000":{
+                        "role": "developer",
+                        "users": [...]
+                    },
+                    "5001":{
+                        "role": "lecturer",
+                        "users": [...]
+                    },
+                    ...
+                }
+        """
+        if(self.isLoggedIn and self.role == 'admin'):
+            self.conn.search(
+                search_base=f'ou=user,{self.search_base}',
+                search_filter=f'(objectClass=*)',
+                attributes=['givenName', 'sn', 'cn', 'displayName', 'homeDirectory', 'loginShell', 'gidNumber']
+            )
+            response = self.conn.entries
+            def getUser(r):
+                entry = json.loads(r.entry_to_json())
+                entry = entry['attributes']
+                return {k: entry[k][0] for k in entry}
+            users = list(map(lambda x: getUser(x), response[1:]))
+            if not grouped:
+                return json.dumps(users)
+            else:
+                roles = self._fetch_roles()
+                grouped_users = {}
+                for gid, role in roles.items(): 
+                    grouped_users.update({
+                        gid:{
+                            'role': role,
+                            'users': list(filter(lambda x: x['gidNumber'] == gid, users))
+                        }
+                    })
+                return json.dumps(grouped_users)
+        raise Err("You don't have permission")
+    
+
+
+# def test_login():
+#     # Admin
+#     admin = IAM('admin', 'eladmin', 'admin')
+#     #print(admin.add_user("Vuong", "Hoang", 'hoangvuong', 'hoangvuong123', 'student'))
+#     IAM('admin', 'eladmin', 'developer')
+#     # Wrong password
+#     IAM('duynguyen', 'duynguyen', 'developer')
+#     # Wrong usn, password
+#     IAM('duynguyn', 'duybingu', 'lecturer')
+#     # Valid usn, password, role
+#     good = IAM('cuongnguyen', 'duynguyen123', 'lecturer')
+#     # Valid usn, password. Wrong role
+#     IAM('cuongnguyen', 'duynguyen123', 'developer')
+#     # Valid usn, password. Role does not exists
+#     IAM('cuongnguyen', 'duynguyen123', 'dev')
+
+# #if __name__ == '__main__':
+# test_login()
+
+app=IAM('admin', 'eladmin', 'admin')
+#print(app.getInfo())
+print(app.getAllInfo(True))

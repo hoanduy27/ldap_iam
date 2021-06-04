@@ -47,7 +47,8 @@
                     contentType: "application/json",
                     data: JSON.stringify(j),
                     success: function (data) {
-                        alert("LOGGED IN AS "+data.role);
+                        window.location.href = 'http://localhost:5000/login'
+                        console.log(data);
                     },
                     error: function(data){
                         console.log(data.responseJSON);

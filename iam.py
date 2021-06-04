@@ -193,7 +193,6 @@ class IAM:
                 changes=changes
             )
         else:
-            
             return False
 
     def changePassword(self, password):
@@ -315,6 +314,3 @@ class IAM:
 # app=IAM('admin', 'eladmin', 'admin')
 # print(app.getInfo())
 # print(app.getAllInfo(True))
-
-# app = IAM('duynguyen', '', 'developer')
-# app.updateInfo(displayName='Hello may cung')

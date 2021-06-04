@@ -1,0 +1,4 @@
+flask-expects-json
+flask
+markupsafe
+Cerberus

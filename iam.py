@@ -6,12 +6,21 @@ from ldap3.protocol.sasl.sasl import validate_simple_password
 import yaml
 import ssl
 import json
+import os
 
+class Err(Exception):
+    def __init__(self,text):
+        self.message = text
 class IAM:
     def __init__(self, username, password, role):
-        with open('config/config.yml', 'r') as f:
-            config = yaml.safe_load(f)
+        # with open('config/config.yml', 'r') as f:
+        #     config = yaml.safe_load(f)
         
+        path = os.path.abspath(__file__)
+        with open(os.path.join(path.rsplit(os.path.sep, 1)[0], 'config/config.yml'), 'r') as f:
+            config = yaml.safe_load(f)
+
+
         self.server_uri = config['serverURI']
         self.search_base = config['searchBase']
         tls_configuration = Tls(validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1_2)
@@ -119,8 +128,8 @@ class IAM:
             print(f"Logged in as {self.role}")
             print(self.conn.entries)
         else:
-            print("Wrong password or usn")
             self.conn.unbind()
+            raise Err("Wrong password, usn or role")
         
     def updateInfo(self, cn=None, displayName=None, givenName=None, sn=None, userpassword=None):
         if(self.conn.bound):
@@ -161,4 +170,6 @@ def test_login():
     IAM('cuongnguyen', 'duynguyen123', 'developer')
     # Valid usn, password. Role does not exists
     IAM('cuongnguyen', 'duynguyen123', 'dev')
-test_login()
+
+if __name__ == '__main__':
+    test_login()

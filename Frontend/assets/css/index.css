@@ -39,9 +39,9 @@
     margin-bottom: 1rem;
   }
   
-  .sign-in-form input {
+  /* .sign-in-form input {
     color: white;
-  }
+  } */
   
   .sign-in-form input:focus {
     opacity: .8;

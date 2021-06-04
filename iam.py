@@ -300,6 +300,6 @@ class IAM:
 # #if __name__ == '__main__':
 # test_login()
 
-app=IAM('admin', 'eladmin', 'admin')
-#print(app.getInfo())
-print(app.getAllInfo(True))
+# app=IAM('admin', 'eladmin', 'admin')
+# print(app.getInfo())
+# print(app.getAllInfo(True))

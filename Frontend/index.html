@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang='vi'>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Trang chủ</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="assets/css/foundation.css">
+    <link rel="stylesheet" href="assets/css/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+
+<body onresize="load()">
+    <div class="container">
+        <!-- <form action="http://localhost:5000/login" method="POST"> -->
+            <div class="sign-in-form">
+                <h4 class="text-center">Sign In</h4>
+                <label for="sign-in-form-username">Username</label>
+                <input type="text" class="sign-in-form-username" id="sign-in-form-username" name="username">
+                <label for="sign-in-form-password">Password</label>
+                <input type="text" class="sign-in-form-password" id="sign-in-form-password" name="password">
+                <fieldset class="large-5 cell">
+                    <legend>Choose Your Role</legend>
+                    <input type="radio" name="role" value="developer" id="developer" required><label
+                        for="developer">Developer</label>
+                    <input type="radio" name="role" value="lecturer" id="lecturer"><label
+                        for="lecturer">Lecturer</label>
+                    <input type="radio" name="role" value="student" id="student"><label for="student">Student</label>
+                </fieldset>
+                <button class="sign-in-form-button" onclick="submitform()">Sign In</button>
+            </div>
+        <!-- </form> -->
+    </div>
+    <script src="assets/js/vendor.js"></script>
+    <script src="assets/js/foundation.js"></script>
+    <script type="text/javascript">
+        function submitform() {
+            var j = {
+                username: $("input[name='username']")[0].value,
+                password: $("input[name='password']")[0].value,
+                role: $("input[name='role']:checked")[0].value
+            };
+            $.ajax(
+                {
+                    url: 'http://localhost:5000/login',
+                    // headers: {'Access-Control-Allow-Origin':'http://localhost:5000/login'},
+                    type: 'POST',
+                    contentType: "application/json",
+                    dataType: "json",
+                    data: JSON.stringify(j),
+                    success: function (data) {
+                        alert("LOGGED IN AS "+j.role);
+                    },
+                    error: function(data){
+                        alert("WRONG username,password or role!");
+                    }
+                }
+            )
+        }
+    </script>
+</body>
+
+</html>

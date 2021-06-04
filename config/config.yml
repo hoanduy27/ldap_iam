@@ -1,3 +1,3 @@
-serverURI: ldap://192.168.1.15
+serverURI: ldap://192.168.1.11
 searchBase: dc=elearning,dc=dsseaboon,dc=com
-password: 
+password: 123456

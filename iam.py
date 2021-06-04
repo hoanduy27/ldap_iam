@@ -75,16 +75,16 @@ class IAM:
             return gids
         return None
 
-    # def _find_roles(self, gid):
-    #     if self.conn.search(
-    #         search_base=f'ou=role,{self.search_base}',
-    #         search_filter=f'(&(objectClass=*)(gidNumber={gid}))',
-    #         attributes=['cn']
-    #     ):
-    #         response = self.conn.entries[0].entry_to_json()
-    #         response = json.loads(response)
-    #         return response['attributes']['cn'][0]
-    #     return None
+    def _find_role(self, gid):
+        if self.conn.search(
+            search_base=f'ou=role,{self.search_base}',
+            search_filter=f'(&(objectClass=*)(gidNumber={gid}))',
+            attributes=['cn']
+        ):
+            response = self.conn.entries[0].entry_to_json()
+            response = json.loads(response)
+            return response['attributes']['cn'][0]
+        return None
 
     def _validate_role(self):
         if(self.role != 'admin'):     
@@ -236,6 +236,7 @@ class IAM:
             }):
                 self.logout()
                 print('Password has changed. Please re-login')
+                return True
             else: 
                 raise Err("Change failed. Please try again")
         else:
@@ -249,8 +250,33 @@ class IAM:
             self.password = None
             self.role = None
             self.isLoggedIn = False
+            return True
         else:
             print("No need. Already logged out")
+            return False
+
+    def getInfo_by_usn(self, username):
+        if(self.isLoggedIn):
+            search_base = f'uid={username},ou=user,{self.search_base}'
+            attributes = ['givenName', 'sn', 'cn', 'displayName', 'homeDirectory', 'loginShell', 'gidNumber'] \
+                if self.role=='admin' else ['givenName', 'sn', 'cn', 'displayName','gidNumber']
+
+            self.conn.search(
+                search_base=search_base,
+                search_filter=f'(objectClass=*)',
+                attributes=attributes
+            )
+            ret = self.conn.result
+            if ret['result'] == 0:
+                response = self.conn.entries[0].entry_to_json()
+                response = json.loads(response)
+                response = response['attributes']
+                info = {k: response[k][0] for k in response}
+                info.update({'uid':self.username, 'role': self._find_role(info['gidNumber'])})
+                return info
+            else:
+                raise Err(ret['description'])
+        raise Err("You're not logged in")
 
     def getInfo(self):
         if(self.isLoggedIn):
@@ -258,7 +284,6 @@ class IAM:
                 else f'uid={self.username},{self.search_base}'
             attributes = ['givenName', 'sn', 'cn', 'displayName', 'homeDirectory', 'loginShell', 'gidNumber'] \
                 if self.role != 'admin' else ['sn', 'cn']
-
             self.conn.search(
                 search_base=search_base,
                 search_filter=f'(objectClass=*)',

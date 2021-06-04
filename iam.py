@@ -26,8 +26,8 @@ class IAM:
         self.server_uri = config['serverURI']
         self.search_base = config['searchBase']
         tls_configuration = Tls(validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1_2)
-        #self.server = Server(self.server_uri, use_ssl=True, tls=tls_configuration)
-        self.server = Server(self.server_uri, get_info=ldap3.ALL)
+        self.server = Server(self.server_uri, use_ssl=True, tls=tls_configuration, get_info=ldap3.ALL)
+        #self.server = Server(self.server_uri, get_info=ldap3.ALL, use_ssl=True)
         self.username = None
         self.password = None
         self.role = None
@@ -57,6 +57,7 @@ class IAM:
             response = self.conn.entries[0].entry_to_json()
             response = json.loads(response)
             return response['attributes']['gidNumber'][0]
+
         return None
 
     def _fetch_roles(self):
@@ -86,7 +87,7 @@ class IAM:
     #     return None
 
     def _validate_role(self):
-        if(self.role != 'admin'):
+        if(self.role != 'admin'):     
             # Check whether the role exists
             gid = self._find_gid(self.role)
             if gid is None:
@@ -95,6 +96,7 @@ class IAM:
                 search_base=f'ou=user,{self.search_base}',
                 search_filter=f'(&(objectClass=*)(uid={self.username})(gidNumber={gid}))',
             )
+
 
         return self.conn.search(
             search_base = self.search_base,
@@ -155,6 +157,7 @@ class IAM:
         if self.conn.bind() and self._validate_role():
             return True
         else:
+            print(self.conn.bound)
             self.conn.unbind()
             return False
     
@@ -189,6 +192,7 @@ class IAM:
                 changes=changes
             )
         else:
+            
             return False
 
     def changePassword(self, password):
@@ -303,3 +307,6 @@ class IAM:
 # app=IAM('admin', 'eladmin', 'admin')
 # print(app.getInfo())
 # print(app.getAllInfo(True))
+
+app = IAM('duynguyen', '123456', 'developer')
+app.updateInfo(displayName='Hello may cung')

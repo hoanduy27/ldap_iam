@@ -1,0 +1,1 @@
+sudo ldapmodify -Y EXTERNAL -H ldapi:/// -f modify_slapd.ldif

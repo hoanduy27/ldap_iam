@@ -17,11 +17,12 @@ class IAM:
         tls_configuration = Tls(validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1_2)
         #self.server = Server(self.server_uri, use_ssl=True, tls=tls_configuration)
         self.server = Server(self.server_uri, get_info=ldap3.ALL)
-        self.username = username
-        self.password = password
-        self.role = role
+        self.username = None
+        self.password = None
+        self.role = None
         self.conn = None
-        self.authenticate()
+        self.isLoggedIn = False
+        self.login(username, password, role)
 
     def _get_new_uid(self):
         if self.conn.search(
@@ -116,14 +117,27 @@ class IAM:
         )
         
         if self.conn.bind() and self._validate_role():
-            print(f"Logged in as {self.role}")
-            print(self.conn.entries)
+            return True
         else:
-            print("Wrong password or usn")
             self.conn.unbind()
+            return False
+    
+    def login(self, username, password, role):
+        if not self.isLoggedIn:
+            self.username = username
+            self.password = password
+            self.role = role
+            self.isLoggedIn = self.authenticate()
+            if(self.isLoggedIn):
+                print(f"Logged in as {self.role}")
+                print(self.conn.entries)
+            else:
+                print("Wrong password or username")
+        else:
+            print("No need. Already logged in")
         
     def updateInfo(self, cn=None, displayName=None, givenName=None, sn=None, userpassword=None):
-        if(self.conn.bound):
+        if(self.isLoggedIn):
             changes = {
                 'cn': [(MODIFY_REPLACE, [cn])],
                 'displayName': [(MODIFY_REPLACE, [displayName])],
@@ -132,19 +146,35 @@ class IAM:
                 'userpassword': [(MODIFY_REPLACE, [userpassword])],
             }
             changes = {k: changes[k] for k in changes if changes[k][0][1][0] is not None}
+            
             return self.conn.modify(
                 dn=f'uid={self.username},ou=user,{self.search_base}',
                 changes=changes
             )
         else:
-            print('Update failed, you\'re not logged in')
+            return False
 
     def changePassword(self, password):
-        pass
+        if self.isLoggedIn:
+            if self.updateInfo(userpassword=password):
+                self.logout()
+                print('Password has changed. Please re-login')
+            else: 
+                print("Change failed. Please try again")
+        else:
+            print("You're not logged in")
 
-    def unbind(self):
-        if not self.bound:
-            self.conn.unbind()
+    def logout(self):
+        if self.isLoggedIn:
+            if not self.conn.bound:
+                self.conn.unbind()
+            self.username = None
+            self.password = None
+            self.role = None
+            self.isLoggedIn = False
+        else:
+            print("No need. Already logged out")
+
 
 def test_login():
     # Admin
@@ -152,7 +182,7 @@ def test_login():
     #print(admin.add_user("Vuong", "Hoang", 'hoangvuong', 'hoangvuong123', 'student'))
     IAM('admin', 'eladmin', 'developer')
     # Wrong password
-    IAM('duynguyen', 'duybingu', 'developer')
+    IAM('duynguyen', 'duynguyen', 'developer')
     # Wrong usn, password
     IAM('duynguyn', 'duybingu', 'lecturer')
     # Valid usn, password, role

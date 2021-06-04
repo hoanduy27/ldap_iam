@@ -127,9 +127,14 @@ class IAM:
                         'homeDirectory': '/home/{username}'
                     }
                 )
-                return self.conn.result
-            return 1
-        return 1
+                ret = self.conn.result
+                if(ret['result'] == 0):
+                    return True
+                else:
+                    raise Err(ret['description'])
+                
+            raise Err('Role not found!')
+        raise Err('You do not have permission!')
                 
     
     def remove_user(self, username, password):
@@ -311,6 +316,5 @@ class IAM:
 # #if __name__ == '__main__':
 # test_login()
 
-# app=IAM('admin', 'eladmin', 'admin')
-# print(app.getInfo())
-# print(app.getAllInfo(True))
+app=IAM('admin', 'eladmin', 'admin')
+print(app.add_user('Kim', 'Nguyen', 'kimnguyen', 'kimnguyen', 'student'))

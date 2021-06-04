@@ -105,8 +105,7 @@ class IAM:
     
     
     def add_user(self, givenName, surname, username, password, role):
-        # FAIL VCL :)
-        if(self.conn.bound and self.role=='admin'):
+        if(self.isLoggedIn and self.role=='admin'):
             gid = self._find_gid(role)
             if gid is not None:
                 self.conn.add(
@@ -124,7 +123,7 @@ class IAM:
                         'uid': username,
                         'uidnumber': self._get_new_uid(),
                         'userpassword': password,
-                        'homeDirectory': '/home/{username}'
+                        'homeDirectory': f'/home/{username}'
                     }
                 )
                 ret = self.conn.result
@@ -137,17 +136,42 @@ class IAM:
         raise Err('You do not have permission!')
                 
     
-    def remove_user(self, username, password):
-        if(self.role=='admin'):
-            #TODO
-            pass
+    def remove_user(self, username):
+        if(self.isLoggedIn and self.role=='admin'):
+            self.conn.delete(
+                dn=f'uid={username},ou=user,{self.search_base}'
+            )
+            ret = self.conn.result
+            if(ret['result'] == 0):
+                return True
+            else:
+                raise Err(ret['description'])
+        else:
+            raise Err("You do not have permission!")
+
     
     def change_role(self, username, role):
-        if(self.role == 'admin'):
-            #TODO
-            pass
-        
+        if(self.isLoggedIn and self.role=='admin'):
+            gid = self._find_gid(role)
+            if gid is not None:
+                self.conn.modify(
+                    dn=f'uid={username},ou=user,{self.search_base}',
+                    changes={'gidNumber': [(MODIFY_REPLACE, [gid])]}
+                )
+                ret = self.conn.result
+                if(ret['result'] == 0):
+                    return True
+                else:
+                    raise Err(ret['description'])
+            else:
+                raise Err("Role not found!")
+        else:
+            raise Err("You do not have permission!")
     def authenticate(self):
+        def isEmpty(s):
+            return s is None or s == ""
+        if(isEmpty(self.username) or isEmpty(self.password)):
+            raise Err("Username or password must not be empty!")
         self.conn = ldap3.Connection(\
             self.server, 
             user=f'uid={self.username},ou=user,{self.search_base}', 
@@ -245,7 +269,7 @@ class IAM:
             response = response['attributes']
             info = {k: response[k][0] for k in response}
             info.update({'uid':self.username, 'role': self.role})
-            return json.dumps(info)
+            return info
         raise Err("You're not logged in")
 
     def getAllUsers(self, grouped=False):
@@ -318,5 +342,5 @@ class IAM:
 # #if __name__ == '__main__':
 # test_login()
 
-app=IAM('admin', 'eladmin', 'admin')
-print(app.add_user('Kim', 'Nguyen', 'kimnguyen', 'kimnguyen', 'student'))
+# app=IAM('admin', 'eladmin', 'admin')
+# print(app.add_user('Kim', 'Nguyen', 'kimnguyen', 'kimnguyen', 'student'))

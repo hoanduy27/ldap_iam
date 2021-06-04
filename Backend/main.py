@@ -24,7 +24,8 @@ def login():
     data = request.json
     print(data)
     if not (validate_request(data,request_schema.login)): 
-        return "-1"
+        response = {'status': 'FAILED','error': "Internal Server Error"}
+        return Response(response=json.dumps(response), status=400, mimetype="application/json")
 
     username = data["username"]
     password = data["password"]

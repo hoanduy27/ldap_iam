@@ -123,7 +123,8 @@ class IAM:
                         'uid': username,
                         'uidnumber': self._get_new_uid(),
                         'userpassword': password,
-                        'homeDirectory': f'/home/{username}'
+                        'homeDirectory': f'/home/{username}',
+                        'loginShell': '/bin/bash'
                     }
                 )
                 ret = self.conn.result
@@ -186,7 +187,7 @@ class IAM:
         if self.conn.bind() and self._validate_role():
             return True
         else:
-            print(self.conn.bound)
+
             self.conn.unbind()
             return False
     
@@ -283,7 +284,7 @@ class IAM:
             search_base = f'uid={self.username},ou=user,{self.search_base}' if self.role != 'admin' \
                 else f'uid={self.username},{self.search_base}'
             attributes = ['givenName', 'sn', 'cn', 'displayName', 'homeDirectory', 'loginShell', 'gidNumber'] \
-                if self.role != 'admin' else ['sn', 'cn']
+                if self.role != 'admin' else ['givenName', 'sn', 'cn', 'displayName']
             self.conn.search(
                 search_base=search_base,
                 search_filter=f'(objectClass=*)',

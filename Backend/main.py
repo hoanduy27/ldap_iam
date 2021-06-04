@@ -7,54 +7,43 @@ from schema import Schema
 from flask_expects_json import expects_json
 from utils import *
 
-
-path = os.path.abspath(__file__)
-parent_path = path.rsplit(os.path.sep, 2)[0]
 import sys
-sys.path.append(parent_path)
+sys.path.append('../')
 from iam import IAM, Err
 
 app = Flask(__name__)
 CORS(app)
-def capfirst(text):
-    return text[0].upper() + text[1:].lower()
-
-app.add_template_filter(capfirst)
-
-
 request_schema = Schema()
+
 iam_object = None
 
 
-@app.route("/login", methods=["GET","POST"])
+@app.route("/login", methods=["POST"])
 # @expects_json(request_schema.login)
 def login():
-    if request.method == "POST":
-        data = request.json
-        # print(data)
-        if not (validate_request(data,request_schema.login)): 
-            response = {'status': 'FAILED','error': "Internal Server Error"}
-            return Response(response=json.dumps(response), status=400, mimetype="application/json")
+    data = request.json
+    print(data)
+    if not (validate_request(data,request_schema.login)): 
+        response = {'status': 'FAILED','error': "Internal Server Error"}
+        return Response(response=json.dumps(response), status=400, mimetype="application/json")
 
-        username = data["username"]
-        password = data["password"]
-        role = data["role"]
+    username = data["username"]
+    password = data["password"]
+    role = data["role"]
 
-        global iam_object
-        try:
-            iam_object = IAM(username,password,role)
-        except Err as e:
-            response = {'status': "FAILED",
-                        'error': str(e)}    
-            return Response(response=json.dumps(response), status=400, mimetype="application/json")
+    global iam_object
+    try:
+        iam_object = IAM(username,password,role)
+    except Err as e:
+        response = {'status': "FAILED",
+                    'error': str(e)}    
+        print(str(e))
+        return Response(response=json.dumps(response), status=400, mimetype="application/json")
 
 
-        response = {'status': "OK",
-                    'role' : iam_object.role}
-    # return Response(response=json.dumps(response), status=200, mimetype="application/json")
-    content = json.loads(iam_object.getInfo())
-    content['root'] = os.path.join(parent_path,"Frontend")
-    return render_template('user.html', **content)
+    response = {'status': "OK",
+                'role' : iam_object.role}
+    return Response(response=json.dumps(response), status=200, mimetype="application/json")
 
 @app.route("/add-user", methods=["POST"])
 @expects_json(request_schema.login)
@@ -72,31 +61,9 @@ def change_role():
     pass
 
 @app.route("/update-info", methods=["POST"])
+@expects_json(request_schema.login)
 def update_info():
-    global iam_object
-    if iam_object is not None:
-        data = request.json
-        if not (validate_request(data,request_schema.updateInfo)): 
-            response = {'status': 'FAILED','error': "Internal Server Error"}
-            return Response(response=json.dumps(response), status=400, mimetype="application/json")
-
-        cn = data["cn"]
-        displayName = data["displayName"]
-        gidNumber = data["gidNumber"]
-        givenName = data["givenName"]
-        homeDirectory = data["homeDirectory"]
-        loginShell = data["loginShell"]
-        role = data["role"]
-        sn = data["sn"]
-        uid = data["uid"]
-        print(cn,displayName,givenName,sn)
-
-        if (iam_object.updateInfo(cn,displayName,givenName,sn)):
-            response = {'status': "OK"}
-            return Response(response=json.dumps(response), status=200, mimetype="application/json")
-
-    response = {'status': "FAIL"}
-    return Response(response=json.dumps(response), status=400, mimetype="application/json")
+    pass
 
 @app.route("/change-password", methods=["POST"])
 @expects_json(request_schema.login)

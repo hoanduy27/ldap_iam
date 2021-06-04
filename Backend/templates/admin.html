@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang='vi'>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>User Information</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/foundation.css')}}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <table class="dashboard-table">
+            <thead>
+                <tr>
+                    <th><a href="#">ID</i></a></th>
+                    <th><a href="#">Timestamp</i></a></th>
+                    <th><a href="#">Username</i></a></th>
+                    <th><a href="#">Role</i></a></th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+            {%for log in content%}
+            <tr>
+                <td>{{ loop.index + (page - 1) * per_page }}</td>
+                <td><span class="dashboard-table-timestamp">{{log[0]}}</span></td>
+                <td>{{log[1]}}</td>
+                <td class="bold">{{log[2]}}</td>
+            </tr>
+            {%endfor%}
+            </tbody>
+        </table>
+        <div style="padding-left: 18vw; padding-top: 1em">{{ pagination.links }}</div>
+        
+    </div>
+    <script src="{{ url_for('static', filename='js/vendor.js')}}" defer></script>
+    <script src="{{ url_for('static', filename='js/foundation.js')}}"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        function turn_on_edit() {
+            var key = $(".arrow > li");
+            var i = 0;
+            $(".myvalue > li").each(function () {
+                var value = $(this)[0].innerText.slice(3,);
+                $(this).html("<input type='text' name='" + key[i].innerText + "' value='" + value + "' style='height: 1.6em; width: 10em'>")
+                i++;
+            })
+
+            $("#botright").html('<button type="button" class="button" onclick="window.location.reload()">Back</button> <button type="button" class="success button" onclick="update()">Apply</button>')
+        }
+
+        function update() {
+            var j = {};
+            var key = $(".arrow > li");
+            var i = 0;
+            $(".myvalue > li > input").each(function () {
+                var value = $(this)[0].value;
+                j[key[i].innerText] = value;
+                i++;
+            })
+            console.log(j);
+            $.ajax(
+                {
+                    url: 'http://localhost:5000/update-info',
+                    type: 'POST',
+                    contentType: "application/json",
+                    data: JSON.stringify(j),
+                    success: function (data) {
+                        window.location.reload();
+                        alert("Update successful!")
+
+                    },
+                    error: function (data) {
+                        window.location.reload();
+                        alert("Update fail!");
+                    }
+                }
+            )
+        }
+    </script>
+
+
+
+</body>
+
+</html>
